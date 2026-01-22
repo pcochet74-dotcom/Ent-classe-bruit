@@ -15,7 +15,6 @@
       margin: 0;
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       background: #f5f5f5;
-      display: flex;
     }
 
     /* NAVBAR HAUT */
@@ -24,12 +23,11 @@
       color: #fff;
       width: 100%;
       position: fixed;
-      top: 0;
+      top: 50px; /* décalé pour laisser place au bouton */
       left: 0;
       z-index: 1000;
     }
 
-    /* Boutons navbar en blanc */
     .navbar .nav-link {
       color: #ffffff;
       position: relative;
@@ -40,7 +38,6 @@
       color: #ffffff;
     }
 
-    /* Barre orange au survol */
     .navbar .nav-item .nav-link::after {
       content: "";
       position: absolute;
@@ -56,6 +53,32 @@
       width: 100%;
     }
 
+    /* BOUTON MENU HAMBURGER AU-DESSUS */
+    .menu-toggle {
+      position: fixed;
+      top: 10px;
+      left: 10px;
+      width: 40px;
+      height: 40px;
+      background-color: #ff8d2e;
+      border: none;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 1100;
+    }
+
+    .menu-toggle span {
+      display: block;
+      width: 22px;
+      height: 3px;
+      background-color: white;
+      margin: 3px 0;
+      border-radius: 2px;
+    }
+
     /* MENU GAUCHE */
     .sidebar {
       width: 230px;
@@ -64,9 +87,9 @@
       padding-top: 80px;
       border-right: 1px solid #ddd;
       position: fixed;
-      top: 0;
+      top: 50px;
       left: 0;
-      z-index: 500;
+      z-index: 900;
       transition: transform 0.3s ease;
     }
 
@@ -86,32 +109,12 @@
       background: #e8f4fa;
     }
 
-    /* Bouton ouvrir/fermer */
-    .toggle-btn {
-      position: fixed;
-      top: 90px;
-      left: 240px;
-      background: #ff8d2e;
-      color: white;
-      border: none;
-      padding: 8px 12px;
-      border-radius: 6px;
-      cursor: pointer;
-      z-index: 600;
-      transition: left 0.3s ease;
-    }
-
-    .toggle-btn.closed {
-      left: 10px;
-    }
-
     /* CONTENU PRINCIPAL */
     .content {
       margin-left: 230px;
-      padding-top: 90px;
+      padding-top: 140px;
       padding-left: 20px;
       padding-right: 20px;
-      width: 100%;
       transition: margin-left 0.3s ease;
     }
 
@@ -123,24 +126,20 @@
 
 <body>
 
+<!-- BOUTON MENU HAMBURGER -->
+<button class="menu-toggle" id="menuToggle">
+  <span></span>
+  <span></span>
+  <span></span>
+</button>
+
 <!-- NAVBAR -->
 <header class="header">
   <nav class="navbar navbar-expand-md">
     <div class="container-fluid" style="max-width:1700px">
-
-      <a class="navbar-brand text-white" href="#">
-        Ent Classe Bruit
-      </a>
-
-      <button class="navbar-toggler text-white border-0" type="button"
-              data-bs-toggle="collapse" data-bs-target="#mainNavbar">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-
-      <div class="collapse navbar-collapse justify-content-end" id="mainNavbar">
+      <a class="navbar-brand text-white" href="#">Ent Classe Bruit</a>
+      <div class="collapse navbar-collapse justify-content-end">
         <ul class="navbar-nav align-items-center">
-
-          <!-- BOUTON ACCUEIL ENT (logo seul + plus grand) -->
           <li class="nav-item">
             <a href="/timeline/timeline" class="nav-link" title="Accueil">
               <svg width="32" height="32" viewBox="0 0 24 24" fill="none"
@@ -150,10 +149,8 @@
               </svg>
             </a>
           </li>
-
         </ul>
       </div>
-
     </div>
   </nav>
 </header>
@@ -166,9 +163,6 @@
   <a href="#">🔧 Calibration</a>
 </div>
 
-<!-- BOUTON OUVRIR/FERMER -->
-<button class="toggle-btn" id="toggleBtn">Fermer</button>
-
 <!-- CONTENU -->
 <div class="content" id="content">
   <h1>Bienvenue sur Ent Classe Bruit</h1>
@@ -178,16 +172,11 @@
 <script>
   const sidebar = document.getElementById("sidebar");
   const content = document.getElementById("content");
-  const toggleBtn = document.getElementById("toggleBtn");
+  const menuToggle = document.getElementById("menuToggle");
 
-  toggleBtn.addEventListener("click", () => {
+  menuToggle.addEventListener("click", () => {
     sidebar.classList.toggle("closed");
     content.classList.toggle("full");
-    toggleBtn.classList.toggle("closed");
-
-    toggleBtn.textContent = sidebar.classList.contains("closed")
-      ? "Ouvrir"
-      : "Fermer";
   });
 </script>
 
