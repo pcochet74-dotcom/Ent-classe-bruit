@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Tableau Prof – Niveau sonore</title>
+
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background: #f5f5f5;
+        padding: 20px;
+        margin: 0;
+    }
+    h1 {
+        text-align: center;
+        margin-bottom: 10px;
+    }
+    #status {
+        font-size: 26px;
+        text-align: center;
+        margin-bottom: 20px;
+        padding: 12px;
+        border-radius: 8px;
+        color: white;
+        font-weight: bold;
+    }
+    #chart {
+        width: 100%;
+        height: 300px;
+    }
+</style>
+</head>
+
+<body>
+
+<h1>📊 Niveau sonore – Tableau Prof</h1>
+
+<div id="status">Chargement...</div>
+
+<canvas id="chart"></canvas>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+const API_URL =
+ "https://firestore.googleapis.com/v1/projects/ent-classe-bruit/databases/(default)/documents/bruit?key=AIzaSyAad_igf2VuhEWgtRZT4cvFtDLuh82AChI";
+
+let volumes = [];
+let timestamps = [];
+
+async function fetchData() {
+    const res = await fetch(API_URL);
+    const data = await res.json();
+
+    if (!data.documents) return;
+
+    volumes = [];
+    timestamps = [];
+
+    data.documents.forEach(doc => {
+        const f = doc.fields;
+        volumes.push(f.volume.doubleValue);
+        timestamps.push(new Date(parseInt(f.timestamp.integerValue)));
+    });
+
+    updateUI();
+}
+
+function updateUI() {
+    const last = volumes[volumes.length - 1];
+
+    const status = document.getElementById("status");
+    if (last > 60) {
+        status.style.background = "red";
+        status.textContent = "🔴 Trop de bruit (" + last.toFixed(1) + ")";
+    } else {
+        status.style.background = "green";
+        status.textContent = "🟢 Calme (" + last.toFixed(1) + ")";
+    }
+
+    chart.data.labels = timestamps.map(t => t.toLocaleTimeString());
+    chart.data.datasets[0].data = volumes;
+    chart.update();
+}
+
+const ctx = document.getElementById("chart").getContext("2d");
+const chart = new Chart(ctx, {
+    type: "line",
+    data: {
+        labels: [],
+        datasets: [{
+            label: "Volume sonore",
+            data: [],
+            borderColor: "#ff8d2e",
+            borderWidth: 2,
+            fill: false
+        }]
+    },
+    options: {
+        responsive: true,
+        scales: {
+            y: { min: 0, max: 120 }
+        }
+    }
+});
+
+setInterval(fetchData, 2000);
+fetchData();
+</script>
+
+</body>
+</html>
