@@ -31,10 +31,28 @@
 
     .navbar .nav-link {
       color: #fff;
+      position: relative;
+      padding-bottom: 6px;
     }
 
     .navbar .nav-link:hover {
       color: #e5e7eb;
+    }
+
+    /* 🔥 Barre orange au survol */
+    .navbar .nav-item .nav-link::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      bottom: 0;
+      width: 0%;
+      height: 3px;
+      background-color: #ff8d2e;
+      transition: width 0.25s ease-in-out;
+    }
+
+    .navbar .nav-item .nav-link:hover::after {
+      width: 100%;
     }
 
     .nav-text {
