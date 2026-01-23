@@ -194,31 +194,49 @@
 
 <script>
 const API_URL =
- "https://firestore.googleapis.com/v1/projects/ent-classe-bruit/databases/(default)/documents/bruit?key=AIzaSyAad_igf2VuhEWgtRZT4cvFtDLuh82AChI";
+ "https://firestore.googleapis.com/v1/projects/ent-classe-bruit/databases/(default)/documents:runQuery?key=AIzaSyAad_igf2VuhEWgtRZT4cvFtDLuh82AChI";
 
 let volumes = [];
 let timestamps = [];
 
 async function fetchData() {
-    const res = await fetch(API_URL);
-    const data = await res.json();
+    const query = {
+        structuredQuery: {
+            from: [{ collectionId: "bruit" }],
+            orderBy: [{
+                field: { fieldPath: "timestamp" },
+                direction: "DESCENDING"
+            }],
+            limit: 10
+        }
+    };
 
-    if (!data.documents) return;
+    const res = await fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(query)
+    });
+
+    const data = await res.json();
 
     volumes = [];
     timestamps = [];
 
-    data.documents.forEach(doc => {
-        const f = doc.fields;
+    data.forEach(entry => {
+        if (!entry.document) return;
+        const f = entry.document.fields;
         volumes.push(f.volume.doubleValue);
         timestamps.push(new Date(parseInt(f.timestamp.integerValue)));
     });
+
+    volumes.reverse();
+    timestamps.reverse();
 
     updateUI();
 }
 
 function updateUI() {
-    const last = volumes[volumes.length - 1];
+    const last = volumes[volumes.length - 1] || 0;
 
     const status = document.getElementById("status");
     if (last > 60) {
@@ -234,30 +252,19 @@ function updateUI() {
     chart.update();
 }
 
-const ctx = document.getElementById("chart").getContext("2d");
-const chart = new Chart(ctx, {
-    type: "line",
-    data: {
-        labels: [],
-        datasets: [{
-            label: "Volume sonore",
-            data: [],
-            borderColor: "#ff8d2e",
-            borderWidth: 2,
-            fill: false
-        }]
-    },
-    options: {
-        responsive: true,
-        scales: {
-            y: { min: 0, max: 120 }
-        }
+window.fetchInterval = setInterval(fetchData, 10000);
+fetchData();
+
+document.addEventListener("visibilitychange", () => {
+    if (document.hidden) {
+        clearInterval(window.fetchInterval);
+    } else {
+        fetchData();
+        window.fetchInterval = setInterval(fetchData, 10000);
     }
 });
-
-setInterval(fetchData, 2000);
-fetchData();
 </script>
+
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
