@@ -81,7 +81,6 @@
       transition: width 0.25s ease-in-out;
     }
 
-    /* Menu vertical */
     .sidebar {
       width: 230px;
       background: #fff;
@@ -168,6 +167,32 @@
 <div class="content" id="content">
   <h1>📊 Dashboard – Niveau sonore</h1>
 
+  <!-- 🔥 BLOC SELECTEURS FIRESTORE -->
+  <div id="firestore-selectors" style="
+      background:#f3f3f3;
+      padding:10px;
+      border-radius:6px;
+      margin-bottom:12px;
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+  ">
+      <div style="display:flex; justify-content:space-between; gap:10px;">
+          <label style="flex:1;">Prof :</label>
+          <select id="prof-select" style="flex:2; padding:4px; border-radius:4px;"></select>
+      </div>
+
+      <div style="display:flex; justify-content:space-between; gap:10px;">
+          <label style="flex:1;">Salle :</label>
+          <select id="salle-select" style="flex:2; padding:4px; border-radius:4px;"></select>
+      </div>
+
+      <div style="display:flex; justify-content:space-between; gap:10px;">
+          <label style="flex:1;">Classe :</label>
+          <select id="classe-select" style="flex:2; padding:4px; border-radius:4px;"></select>
+      </div>
+  </div>
+
   <div id="status">Chargement...</div>
 
   <canvas id="chart"></canvas>
@@ -186,22 +211,111 @@
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
+<!-- 🔥 FIRESTORE SELECTEURS -->
 <script>
-const API_URL =
- "https://firestore.googleapis.com/v1/projects/ent-classe-bruit/databases/(default)/documents:runQuery?key=AIzaSyAad_igf2VuhEWgtRZT4cvFtDLuh82AChI";
+async function loadProfs() {
+    const url = "https://firestore.googleapis.com/v1/projects/ent-classe-bruit/databases/(default)/documents/profs";
+    const res = await fetch(url);
+    const data = await res.json();
 
+    const profSelect = document.getElementById("prof-select");
+    profSelect.innerHTML = "";
+
+    data.documents.forEach(doc => {
+        const name = doc.name.split("/").pop();
+        const opt = document.createElement("option");
+        opt.value = name;
+        opt.textContent = name;
+        profSelect.appendChild(opt);
+    });
+
+    loadSalles();
+}
+
+async function loadSalles() {
+    const prof = document.getElementById("prof-select").value;
+    const url = `https://firestore.googleapis.com/v1/projects/ent-classe-bruit/databases/(default)/documents/profs/${prof}/salles`;
+
+    const res = await fetch(url);
+    const data = await res.json();
+
+    const salleSelect = document.getElementById("salle-select");
+    salleSelect.innerHTML = "";
+
+    data.documents.forEach(doc => {
+        const name = doc.name.split("/").pop();
+        const opt = document.createElement("option");
+        opt.value = name;
+        opt.textContent = name;
+        salleSelect.appendChild(opt);
+    });
+
+    loadClasses();
+}
+
+async function loadClasses() {
+    const prof = document.getElementById("prof-select").value;
+    const salle = document.getElementById("salle-select").value;
+
+    const url = `https://firestore.googleapis.com/v1/projects/ent-classe-bruit/databases/(default)/documents/profs/${prof}/salles/${salle}`;
+
+    const res = await fetch(url);
+    const data = await res.json();
+
+    const arr = data?.fields?.classes?.arrayValue?.values || [];
+
+    const classeSelect = document.getElementById("classe-select");
+    classeSelect.innerHTML = "";
+
+    arr.forEach(v => {
+        const opt = document.createElement("option");
+        opt.value = v.stringValue;
+        opt.textContent = v.stringValue;
+        classeSelect.appendChild(opt);
+    });
+}
+
+document.getElementById("prof-select").onchange = loadSalles;
+document.getElementById("salle-select").onchange = loadClasses;
+
+loadProfs();
+</script>
+
+<!-- 🔥 LECTURE FIRESTORE + CHART -->
+<script>
 let volumes = [];
 let timestamps = [];
 
 async function fetchData() {
+    const prof = document.getElementById("prof-select").value;
+    const salle = document.getElementById("salle-select").value;
+    const classe = document.getElementById("classe-select").value;
+
+    const API_URL =
+    "https://firestore.googleapis.com/v1/projects/ent-classe-bruit/databases/(default)/documents:runQuery";
+
     const query = {
         structuredQuery: {
-            from: [{ collectionId: "bruit" }],
+            from: [{ collectionGroup: "bruit" }],
+            where: {
+                compositeFilter: {
+                    op: "AND",
+                    filters: [
+                        {
+                            fieldFilter: {
+                                field: { fieldPath: "classe" },
+                                op: "EQUAL",
+                                value: { stringValue: classe }
+                            }
+                        }
+                    ]
+                }
+            },
             orderBy: [{
                 field: { fieldPath: "timestamp" },
                 direction: "DESCENDING"
             }],
-            limit: 10
+            limit: 20
         }
     };
 
@@ -219,8 +333,9 @@ async function fetchData() {
     data.forEach(entry => {
         if (!entry.document) return;
         const f = entry.document.fields;
+
         volumes.push(f.volume.doubleValue);
-        timestamps.push(new Date(parseInt(f.timestamp.integerValue)));
+        timestamps.push(new Date(f.timestamp.timestampValue));
     });
 
     volumes.reverse();
@@ -246,6 +361,21 @@ function updateUI() {
     chart.update();
 }
 
+const ctx = document.getElementById("chart").getContext("2d");
+const chart = new Chart(ctx, {
+    type: "line",
+    data: {
+        labels: [],
+        datasets: [{
+            label: "Volume sonore",
+            data: [],
+            borderColor: "#ff8d2e",
+            borderWidth: 2,
+            fill: false
+        }]
+    }
+});
+
 window.fetchInterval = setInterval(fetchData, 10000);
 fetchData();
 
@@ -258,7 +388,6 @@ document.addEventListener("visibilitychange", () => {
     }
 });
 </script>
-
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
