@@ -1,11 +1,12 @@
-Set shell = CreateObject("WScript.Shell")
+Set WshShell = CreateObject("WScript.Shell")
 
+' Active la fenêtre courante
+WshShell.AppActivate WshShell
+
+' Lance PowerShell pour mettre la fenêtre active en topmost
 cmd = "powershell -NoProfile -WindowStyle Hidden -Command " & Chr(34) & _
-      "$sig='[DllImport(""user32.dll"")]public static extern bool SetWindowPos(" & _
-      "IntPtr hWnd,IntPtr hWndInsertAfter,int X,int Y,int cx,int cy,uint uFlags);';" & _
-      "Add-Type -Name Win32 -Namespace Native -MemberDefinition $sig;" & _
-      "$proc = Get-Process msedge | Sort-Object StartTime -Descending | Select-Object -First 1;" & _
-      "$hwnd = $proc.MainWindowHandle;" & _
-      "[Native.Win32]::SetWindowPos($hwnd,[IntPtr](-1),0,0,0,0,0x0003)" & Chr(34)
+      "Add-Type '[DllImport(""user32.dll"")]public static extern bool SetWindowPos(IntPtr hWnd,IntPtr hWndInsertAfter,int X,int Y,int cx,int cy,uint uFlags);';" & _
+      "$hwnd = (Get-Process | Where-Object {$_.MainWindowHandle -ne 0} | Sort-Object StartTime -Descending | Select-Object -First 1).MainWindowHandle;" & _
+      "[Win32]::SetWindowPos($hwnd,[IntPtr](-1),0,0,0,0,0x0003)" & Chr(34)
 
-shell.Run cmd, 0, False
+WshShell.Run cmd, 0, False
