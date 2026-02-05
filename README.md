@@ -1,7 +1,7 @@
 Outils pour la classe est un ensemble de solutions numériques conçues pour faciliter le travail des enseignants et améliorer la gestion de la classe au quotidien. Le projet regroupe plusieurs technologies complémentaires, toutes pensées pour être simples, rapides à utiliser et parfaitement intégrées aux outils déjà présents dans les établissements.
 
 # Notes de version : 1.0
-La 1ère version des Outils pour la classe est enfin arrivée. Cette version sort tout juste du laboratoire de développement et comporte quelques bugs. Pour amélioré l'expérience utilisateur, vous pouvez signaler les problèmes sur ce lien : https://forms.office.com/r/iqTW7Pdcer
+La 1ère version des Outils pour la classe est enfin arrivée. Cette version sort tout juste du laboratoire de développement et comporte quelques bugs. Pour améliorer l'expérience utilisateur, vous pouvez signaler les problèmes sur ce lien : https://forms.office.com/r/iqTW7Pdcer
 
 # Extensions Chrome / Edge
 Ces extensions permettent d’afficher directement, depuis l’ENT ou le navigateur, différents outils pratiques pour la classe. Parmi eux :
