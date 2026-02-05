@@ -1,0 +1,3 @@
+^Space::{
+    WinSetAlwaysOnTop true, "A"
+}
